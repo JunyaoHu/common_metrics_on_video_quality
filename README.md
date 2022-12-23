@@ -3,7 +3,9 @@ calculate FVD (frechet video distance)
 
 This code is from [MVCD model project](https://github.com/voletiv/mcvd-pytorch), I've just extracted the part of it that's relevant to the FVD calculation. This code can be used to evaluate FVD scores for generative models. 
 
-16 batches, 3 channels, 15 frames, 64x64 size
+16 batches, 3 channels (necessary), 15 frames, 64x64 size
+
+pixel value should be 0-1.
 
 a all-zero matrix and a all-one matrix, their FVD is 134.24, as shown in the picture below.
 
