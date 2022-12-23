@@ -1,1 +1,0 @@
-please download https://www.dropbox.com/s/ge9e5ujwgetktms/i3d_torchscript.pt
