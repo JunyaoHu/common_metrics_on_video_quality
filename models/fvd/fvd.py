@@ -286,3 +286,10 @@ def frechet_distance(feats_fake: np.ndarray, feats_real: np.ndarray) -> float:
     s, _ = sqrtm(np.dot(sigma_gen, sigma_real), disp=False) # pylint: disable=no-member
     fid = np.real(m + np.trace(sigma_gen + sigma_real - s * 2))
     return float(fid)
+
+def to_i3d(x, c, h, w):
+    x = x.reshape(x.shape[0], -1, c, h, w)
+    if c == 1:
+        x = x.repeat(1, 1, 3, 1, 1) # hack for greyscale images
+    x = x.permute(0, 2, 1, 3, 4)  # BTCHW -> BCTHW
+    return x
