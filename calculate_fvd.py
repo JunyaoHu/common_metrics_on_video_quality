@@ -6,7 +6,7 @@ from tqdm import tqdm
 def calculate_fvd(batches1, batches2, calculate_per_frame, device):
     print("calculate_fvd...")
 
-    # videos [batch_num, batch_size, timestamps, channel, h, w]
+    # batches [batch_num, batch_size, timestamps, channel, h, w]
     
     assert batches1.shape == batches2.shape
     
