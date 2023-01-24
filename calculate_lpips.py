@@ -45,7 +45,7 @@ def calculate_lpips(batches1, batches2, calculate_per_frame, device):
             loss_fn.to(device)
 
             # calculate lpips of a video
-            lpips_results_of_a_video.append(loss_fn.forward(img1, img2).mean().detach().cpu())
+            lpips_results_of_a_video.append(loss_fn.forward(img1, img2).mean().detach().cpu().tolist())
 
         lpips_results.append(lpips_results_of_a_video)
 
@@ -66,9 +66,9 @@ def main():
     VIDEO_LENGTH = 30
     CHANNEL = 3
     SIZE = 64
-    CALCULATE_PER_FRAME = 1
+    CALCULATE_PER_FRAME = 10
     batches1 = torch.ones(NUMBER_OF_BATCHES, NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
-    batches2 = torch.ones(NUMBER_OF_BATCHES, NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
+    batches2 = torch.zeros(NUMBER_OF_BATCHES, NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
     device = torch.device("cuda")
     print(calculate_lpips(batches1, batches2, CALCULATE_PER_FRAME, device))
 
