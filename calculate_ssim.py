@@ -25,35 +25,38 @@ def ssim(img1, img2):
  
 def calculate_ssim_function(img1, img2):
     # [0,1]
+    # ssim is the only metric extremely sensitive to gray being compared to b/w 
     if not img1.shape == img2.shape:
         raise ValueError('Input images must have the same dimensions.')
     if img1.ndim == 2:
         return ssim(img1, img2)
     elif img1.ndim == 3:
-        if img1.shape[2] == 3:
+        if img1.shape[0] == 3:
             ssims = []
             for i in range(3):
-                ssims.append(ssim(img1, img2))
-            return np.array(ssims).mean()
-        elif img1.shape[2] == 1:
+                ssims.append(ssim(img1[i], img2[i]))
+            return np.array(ssims).mean()                   
+        elif img1.shape[0] == 1:
             return ssim(np.squeeze(img1), np.squeeze(img2))
     else:
         raise ValueError('Wrong input image dimensions.')
 
-def calculate_ssim(batches1, batches2, calculate_per_frame):
+def trans(x):
+    return x
+
+def calculate_ssim(videos1, videos2, calculate_per_frame):
     print("calculate_ssim...")
 
-    # batches [batch_num, batch_size, timestamps, channel, h, w]
+    # videos [batch_size, timestamps, channel, h, w]
     
-    assert batches1.shape == batches2.shape
+    assert videos1.shape == videos2.shape
 
-    # videos [batch_num * batch_size, timestamps, channel, h, w]
-    videos1 = torch.flatten(batches1, start_dim=0, end_dim=1)
-    videos2 = torch.flatten(batches2, start_dim=0, end_dim=1)
-    
+    videos1 = trans(videos1)
+    videos2 = trans(videos2)
+
     ssim_results = []
     
-    for video_num in tqdm(range(len(videos1))):
+    for video_num in tqdm(range(videos1.shape[0])):
         # get a video
         # video [timestamps, channel, h, w]
         video1 = videos1[video_num]
@@ -63,22 +66,29 @@ def calculate_ssim(batches1, batches2, calculate_per_frame):
         for clip_timestamp in range(calculate_per_frame, len(video1)+1, calculate_per_frame):
             # get a img
             # img [timestamps[x], channel, h, w]
-            # img [channel, h, w]
-            # img [h, w, channel] permute(1,2,0)
+            # img [channel, h, w] numpy
 
-            img1 = video1[clip_timestamp-1].permute(1,2,0).numpy()
-            img2 = video2[clip_timestamp-1].permute(1,2,0).numpy()
+            img1 = video1[clip_timestamp-1].numpy()
+            img2 = video2[clip_timestamp-1].numpy()
             
             # calculate ssim of a video
             ssim_results_of_a_video.append(calculate_ssim_function(img1, img2))
 
         ssim_results.append(ssim_results_of_a_video)
 
+    ssim = {}
+    ssim_std = {}
+
+    for idx, clip_timestamp in enumerate(range(calculate_per_frame, len(video1)+1, calculate_per_frame)):
+        ssim[clip_timestamp] = np.mean(ssim_results, axis=0)[idx]
+        ssim_std[clip_timestamp] = np.std(ssim_results, axis=0)[idx]
+
     result = {
-        "ssim_video_setting": batches1.shape,
+        "ssim": ssim,
+        "ssim_std": ssim_std,
         "ssim_per_frame": calculate_per_frame,
-        "ssim_mean_per_frame": np.mean(ssim_results, axis=0),
-        "ssim_std_per_frame": np.std(ssim_results, axis=0)
+        "ssim_video_setting": video1.shape,
+        "ssim_video_setting_name": "time, channel, heigth, width",
     }
 
     return result
@@ -86,15 +96,18 @@ def calculate_ssim(batches1, batches2, calculate_per_frame):
 # test code / using example
 
 def main():
-    NUMBER_OF_BATCHES = 4
     NUMBER_OF_VIDEOS = 8
     VIDEO_LENGTH = 30
     CHANNEL = 3
     SIZE = 64
-    CALCULATE_PER_FRAME = 5
-    batches1 = torch.ones(NUMBER_OF_BATCHES, NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
-    batches2 = torch.ones(NUMBER_OF_BATCHES, NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
-    print(calculate_ssim(batches1, batches2, CALCULATE_PER_FRAME))
+    CALCULATE_PER_FRAME = 10
+    videos1 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
+    videos2 = torch.ones(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
+    device = torch.device("cuda")
+
+    import json
+    result = calculate_ssim(videos1, videos2, CALCULATE_PER_FRAME)
+    print(json.dumps(result, indent=4))
 
 if __name__ == "__main__":
     main()
