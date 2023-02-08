@@ -44,13 +44,13 @@ def calculate_lpips(videos1, videos2, calculate_per_frame, device):
         video2 = videos2[video_num]
 
         lpips_results_of_a_video = []
-        for clip_timestamp in range(calculate_per_frame, len(video1)+1, calculate_per_frame):
+        for clip_timestamp in range(len(video1)):
             # get a img
             # img [timestamps[x], channel, h, w]
             # img [channel, h, w] tensor
 
-            img1 = video1[clip_timestamp-1].unsqueeze(0).cuda()
-            img2 = video2[clip_timestamp-1].unsqueeze(0).cuda()
+            img1 = video1[clip_timestamp].unsqueeze(0).cuda()
+            img2 = video2[clip_timestamp].unsqueeze(0).cuda()
             
             loss_fn.to(device)
 

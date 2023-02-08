@@ -41,8 +41,8 @@ def calculate_psnr(videos1, videos2, calculate_per_frame):
             # img [timestamps[x], channel, h, w]
             # img [channel, h, w] numpy
 
-            img1 = video1[clip_timestamp-1].numpy()
-            img2 = video2[clip_timestamp-1].numpy()
+            img1 = video1[clip_timestamp].numpy()
+            img2 = video2[clip_timestamp].numpy()
             
             # calculate psnr of a video
             psnr_results_of_a_video.append(img_psnr(img1, img2))
