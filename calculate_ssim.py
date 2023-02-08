@@ -63,7 +63,7 @@ def calculate_ssim(videos1, videos2, calculate_per_frame):
         video2 = videos2[video_num]
 
         ssim_results_of_a_video = []
-        for clip_timestamp in range(calculate_per_frame, len(video1)+1, calculate_per_frame):
+        for clip_timestamp in range(len(video1)):
             # get a img
             # img [timestamps[x], channel, h, w]
             # img [channel, h, w] numpy
@@ -76,12 +76,14 @@ def calculate_ssim(videos1, videos2, calculate_per_frame):
 
         ssim_results.append(ssim_results_of_a_video)
 
+    ssim_results = np.array(ssim_results)
+
     ssim = {}
     ssim_std = {}
 
-    for idx, clip_timestamp in enumerate(range(calculate_per_frame, len(video1)+1, calculate_per_frame)):
-        ssim[clip_timestamp] = np.mean(ssim_results, axis=0)[idx]
-        ssim_std[clip_timestamp] = np.std(ssim_results, axis=0)[idx]
+    for clip_timestamp in range(calculate_per_frame, len(video1)+1, calculate_per_frame):
+        ssim[f'avg[:{clip_timestamp}]'] = np.mean(ssim_results[:,:clip_timestamp])
+        ssim_std[f'std[:{clip_timestamp}]'] = np.std(ssim_results[:,:clip_timestamp])
 
     result = {
         "ssim": ssim,
@@ -97,12 +99,12 @@ def calculate_ssim(videos1, videos2, calculate_per_frame):
 
 def main():
     NUMBER_OF_VIDEOS = 8
-    VIDEO_LENGTH = 30
+    VIDEO_LENGTH = 60
     CHANNEL = 3
     SIZE = 64
     CALCULATE_PER_FRAME = 10
     videos1 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
-    videos2 = torch.ones(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
+    videos2 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
     device = torch.device("cuda")
 
     import json
