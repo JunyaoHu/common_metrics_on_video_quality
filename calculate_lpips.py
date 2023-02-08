@@ -58,15 +58,17 @@ def calculate_lpips(videos1, videos2, calculate_per_frame, device):
             lpips_results_of_a_video.append(loss_fn.forward(img1, img2).mean().detach().cpu().tolist())
         lpips_results.append(lpips_results_of_a_video)
     
-    lpips_mean = {}
+    lpips_results = np.array(lpips_results)
+    
+    lpips = {}
     lpips_std = {}
 
-    for idx, clip_timestamp in enumerate(range(calculate_per_frame, len(video1)+1, calculate_per_frame)):
-        lpips_mean[clip_timestamp] = np.mean(lpips_results, axis=0)[idx]
-        lpips_std[clip_timestamp] = np.std(lpips_results, axis=0)[idx]
+    for clip_timestamp in range(calculate_per_frame, len(video1)+1, calculate_per_frame):
+        lpips[f'avg[:{clip_timestamp}]'] = np.mean(lpips_results[:,:clip_timestamp])
+        lpips_std[f'std[:{clip_timestamp}]'] = np.std(lpips_results[:,:clip_timestamp])
 
     result = {
-        "lpips": lpips_mean,
+        "lpips": lpips,
         "lpips_std": lpips_std,
         "lpips_per_frame": calculate_per_frame,
         "lpips_video_setting": video1.shape,
@@ -79,7 +81,7 @@ def calculate_lpips(videos1, videos2, calculate_per_frame, device):
 
 def main():
     NUMBER_OF_VIDEOS = 8
-    VIDEO_LENGTH = 30
+    VIDEO_LENGTH = 50
     CHANNEL = 3
     SIZE = 64
     CALCULATE_PER_FRAME = 10
