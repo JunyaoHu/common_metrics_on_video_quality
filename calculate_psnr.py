@@ -36,7 +36,7 @@ def calculate_psnr(videos1, videos2, calculate_per_frame):
         video2 = videos2[video_num]
 
         psnr_results_of_a_video = []
-        for clip_timestamp in range(calculate_per_frame, len(video1)+1, calculate_per_frame):
+        for clip_timestamp in range(len(video1)):
             # get a img
             # img [timestamps[x], channel, h, w]
             # img [channel, h, w] numpy
@@ -49,12 +49,14 @@ def calculate_psnr(videos1, videos2, calculate_per_frame):
 
         psnr_results.append(psnr_results_of_a_video)
     
+    psnr_results = np.array(psnr_results)
+    
     psnr = {}
     psnr_std = {}
 
-    for idx, clip_timestamp in enumerate(range(calculate_per_frame, len(video1)+1, calculate_per_frame)):
-        psnr[clip_timestamp] = np.mean(psnr_results, axis=0)[idx]
-        psnr_std[clip_timestamp] = np.std(psnr_results, axis=0)[idx]
+    for clip_timestamp in range(calculate_per_frame, len(video1)+1, calculate_per_frame):
+        psnr[f'avg[:{clip_timestamp}]'] = np.mean(psnr_results[:,:clip_timestamp])
+        psnr_std[f'std[:{clip_timestamp}]'] = np.std(psnr_results[:,:clip_timestamp])
 
     result = {
         "psnr": psnr,
@@ -70,7 +72,7 @@ def calculate_psnr(videos1, videos2, calculate_per_frame):
 
 def main():
     NUMBER_OF_VIDEOS = 8
-    VIDEO_LENGTH = 30
+    VIDEO_LENGTH = 50
     CHANNEL = 3
     SIZE = 64
     CALCULATE_PER_FRAME = 10
