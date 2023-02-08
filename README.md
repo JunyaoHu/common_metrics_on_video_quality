@@ -8,7 +8,7 @@ ps: pixel value should be in [0, 1], support grayscale and RGB.
 
 Example: 8 videos of a batch, 30 frames, 3 channels, 64x64 size, calculate per 10 frames (>=10 necessary, FVD calculation needed) 
 
-it means we calculate FVD-frames[:10], FVD-frames[:20], FVD-frames[:30], PSNR/SSIM/LPIPS-frame[10], PSNR/SSIM/LPIPS-frame[20], PSNR/SSIM/LPIPS-frame[30], and their std.
+it means we calculate FVD-frames[:10], FVD-frames[:20], FVD-frames[:30], avg-PSNR/SSIM/LPIPS-frame[:10], avg-PSNR/SSIM/LPIPS-frame[:20], avg-PSNR/SSIM/LPIPS-frame[:30], and their std.
 
 a all-zero matrix and a all-one matrix, their FVD10 is 570.07, FVD20 is 338.18 and FVD30 is 151.17. We also calculate their standard deviation. Other metrics are the same.
 
@@ -16,9 +16,9 @@ a all-zero matrix and a all-one matrix, their FVD10 is 570.07, FVD20 is 338.18 a
 {
     "fvd": {
         "fvd": {
-            "10": 570.07320378183,
-            "20": 338.18221898178774,
-            "30": 151.16806952692093
+            "[:10]": 570.07320378183,
+            "[:20]": 338.18221898178774,
+            "[:30]": 151.16806952692093
         },
         "fvd_per_frame": 10,
         "fvd_video_setting": [
@@ -32,14 +32,14 @@ a all-zero matrix and a all-one matrix, their FVD10 is 570.07, FVD20 is 338.18 a
     },
     "ssim": {
         "ssim": {
-            "10": 9.999000099990664e-05,
-            "20": 9.999000099990664e-05,
-            "30": 9.999000099990664e-05
+            "avg[:10]": 9.999000099990664e-05,
+            "avg[:20]": 9.999000099990664e-05,
+            "avg[:30]": 9.999000099990664e-05
         },
         "ssim_std": {
-            "10": 0.0,
-            "20": 0.0,
-            "30": 0.0
+            "std[:10]": 0.0,
+            "std[:20]": 0.0,
+            "std[:30]": 0.0
         },
         "ssim_per_frame": 10,
         "ssim_video_setting": [
@@ -52,14 +52,14 @@ a all-zero matrix and a all-one matrix, their FVD10 is 570.07, FVD20 is 338.18 a
     },
     "psnr": {
         "psnr": {
-            "10": 0.0,
-            "20": 0.0,
-            "30": 0.0
+            "avg[:10]": 0.0,
+            "avg[:20]": 0.0,
+            "avg[:30]": 0.0
         },
         "psnr_std": {
-            "10": 0.0,
-            "20": 0.0,
-            "30": 0.0
+            "std[:10]": 0.0,
+            "std[:20]": 0.0,
+            "std[:30]": 0.0
         },
         "psnr_per_frame": 10,
         "psnr_video_setting": [
@@ -72,14 +72,14 @@ a all-zero matrix and a all-one matrix, their FVD10 is 570.07, FVD20 is 338.18 a
     },
     "lpips": {
         "lpips": {
-            "10": 0.8140146732330322,
-            "20": 0.8140146732330322,
-            "30": 0.8140146732330322
+            "avg[:10]": 0.8140146732330322,
+            "avg[:20]": 0.8140146732330322,
+            "avg[:30]": 0.8140146732330322
         },
         "lpips_std": {
-            "10": 0.0,
-            "20": 0.0,
-            "30": 0.0
+            "std[:10]": 0.0,
+            "std[:20]": 0.0,
+            "std[:30]": 0.0
         },
         "lpips_per_frame": 10,
         "lpips_video_setting": [
