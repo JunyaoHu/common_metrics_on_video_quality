@@ -8,7 +8,7 @@ ps: pixel value should be in [0, 1], support grayscale and RGB.
 
 # Example
 
-8 videos of a batch, 30 frames, 3 channels, 64x64 size, calculate per 8 frames， and calculate to final.
+8 videos of a batch, 30 frames, 3 channels, 64x64 size, calculate per 8 frames, and calculate to final.
 
 ```
 import torch
