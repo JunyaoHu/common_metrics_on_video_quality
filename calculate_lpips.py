@@ -22,7 +22,7 @@ def trans(x):
 
     return x
 
-def calculate_lpips(videos1, videos2, calculate_per_frame, device):
+def calculate_lpips(videos1, videos2, calculate_per_frame, calculate_final, device):
     # image should be RGB, IMPORTANT: normalized to [-1,1]
     print("calculate_lpips...")
 
@@ -67,6 +67,10 @@ def calculate_lpips(videos1, videos2, calculate_per_frame, device):
         lpips[f'avg[:{clip_timestamp}]'] = np.mean(lpips_results[:,:clip_timestamp])
         lpips_std[f'std[:{clip_timestamp}]'] = np.std(lpips_results[:,:clip_timestamp])
 
+    if calculate_final:
+        lpips['final'] = np.mean(lpips_results)
+        lpips_std['final'] = np.std(lpips_results)
+
     result = {
         "lpips": lpips,
         "lpips_std": lpips_std,
@@ -84,13 +88,14 @@ def main():
     VIDEO_LENGTH = 50
     CHANNEL = 3
     SIZE = 64
-    CALCULATE_PER_FRAME = 10
+    CALCULATE_PER_FRAME = 5
+    CALCULATE_FINAL = True
     videos1 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
     videos2 = torch.ones(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
     device = torch.device("cuda")
 
     import json
-    result = calculate_lpips(videos1, videos2, CALCULATE_PER_FRAME, device)
+    result = calculate_lpips(videos1, videos2, CALCULATE_PER_FRAME, CALCULATE_FINAL, device)
     print(json.dumps(result, indent=4))
 
 if __name__ == "__main__":

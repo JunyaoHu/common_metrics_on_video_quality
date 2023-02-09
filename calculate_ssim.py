@@ -44,7 +44,7 @@ def calculate_ssim_function(img1, img2):
 def trans(x):
     return x
 
-def calculate_ssim(videos1, videos2, calculate_per_frame):
+def calculate_ssim(videos1, videos2, calculate_per_frame, calculate_final):
     print("calculate_ssim...")
 
     # videos [batch_size, timestamps, channel, h, w]
@@ -85,6 +85,10 @@ def calculate_ssim(videos1, videos2, calculate_per_frame):
         ssim[f'avg[:{clip_timestamp}]'] = np.mean(ssim_results[:,:clip_timestamp])
         ssim_std[f'std[:{clip_timestamp}]'] = np.std(ssim_results[:,:clip_timestamp])
 
+    if calculate_final:
+        ssim['final'] = np.mean(ssim_results)
+        ssim_std['final'] = np.std(ssim_results)
+
     result = {
         "ssim": ssim,
         "ssim_std": ssim_std,
@@ -102,13 +106,14 @@ def main():
     VIDEO_LENGTH = 60
     CHANNEL = 3
     SIZE = 64
-    CALCULATE_PER_FRAME = 10
+    CALCULATE_PER_FRAME = 5
+    CALCULATE_FINAL = True
     videos1 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
     videos2 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
     device = torch.device("cuda")
 
     import json
-    result = calculate_ssim(videos1, videos2, CALCULATE_PER_FRAME)
+    result = calculate_ssim(videos1, videos2, CALCULATE_PER_FRAME, CALCULATE_FINAL)
     print(json.dumps(result, indent=4))
 
 if __name__ == "__main__":

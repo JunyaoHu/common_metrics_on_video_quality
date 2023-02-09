@@ -13,7 +13,7 @@ def trans(x):
 
     return x
 
-def calculate_fvd(videos1, videos2, calculate_per_frame, device):
+def calculate_fvd(videos1, videos2, calculate_per_frame, calculate_final, device):
     print("calculate_fvd...")
 
     # videos [batch_size, timestamps, channel, h, w]
@@ -32,9 +32,12 @@ def calculate_fvd(videos1, videos2, calculate_per_frame, device):
 
     fvd_results = {}
 
-    assert calculate_per_frame >= 10
-
     for clip_timestamp in tqdm(range(calculate_per_frame, videos1.shape[-3]+1, calculate_per_frame)):
+
+        # for calculate FVD, each clip_timestamp must >= 10
+        if clip_timestamp < 10:
+            continue
+
         # get a video clip
         # videos_clip [batch_size, channel, timestamps[:clip], h, w]
         videos_clip1 = videos1[:, :, : clip_timestamp]
@@ -46,6 +49,11 @@ def calculate_fvd(videos1, videos2, calculate_per_frame, device):
       
         # calculate FVD when timestamps[:clip]
         fvd_results[f'[:{clip_timestamp}]'] = frechet_distance(feats1, feats2)
+
+    if calculate_final:
+        feats1 = get_fvd_feats(videos1, i3d=i3d, device=device)
+        feats2 = get_fvd_feats(videos2, i3d=i3d, device=device)
+        fvd_results[f'final'] = frechet_distance(feats1, feats2)
 
     result = {
         "fvd": fvd_results,
@@ -63,13 +71,14 @@ def main():
     VIDEO_LENGTH = 30
     CHANNEL = 3
     SIZE = 64
-    CALCULATE_PER_FRAME = 10
+    CALCULATE_PER_FRAME = 5
+    CALCULATE_FINAL = True
     videos1 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
     videos2 = torch.ones(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
     device = torch.device("cuda")
 
     import json
-    result = calculate_fvd(videos1, videos2, CALCULATE_PER_FRAME, device)
+    result = calculate_fvd(videos1, videos2, CALCULATE_PER_FRAME, CALCULATE_FINAL, device)
     print(json.dumps(result, indent=4))
 
 if __name__ == "__main__":
