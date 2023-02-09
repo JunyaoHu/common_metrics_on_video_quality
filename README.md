@@ -38,7 +38,7 @@ result['lpips'] = calculate_lpips(videos1, videos2, CALCULATE_PER_FRAME, CALCULA
 print(json.dumps(result, indent=4))
 ```
 
-it means we calculate `FVD-frames[:16]`, `FVD-frames[:24]`, `FVD-frames[:final]` (it means `FVD-frames[:30]`) , `avg-PSNR/SSIM/LPIPS-frame[:8]`, avg-PSNR/SSIM/LPIPS-frame[:16], avg-PSNR/SSIM/LPIPS-frame[:24], avg-PSNR/SSIM/LPIPS-frame[:final] (it means `avg-PSNR/SSIM/LPIPS-frame[:30]`) , and their std.
+it means we calculate `FVD-frames[:16]`, `FVD-frames[:24]`, `FVD-frames[:final]` (it means `FVD-frames[:30]`) , `avg-PSNR/SSIM/LPIPS-frame[:8]`, `avg-PSNR/SSIM/LPIPS-frame[:16]`, `avg-PSNR/SSIM/LPIPS-frame[:24]`, `avg-PSNR/SSIM/LPIPS-frame[:final]` (it means `avg-PSNR/SSIM/LPIPS-frame[:30]`) , and their std.
 
 we cannot calculate `FVD-frames[:8]`, and it will pass when calculating, see ps.6.
 
