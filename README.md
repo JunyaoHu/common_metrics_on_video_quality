@@ -35,7 +35,7 @@ device = torch.device("cpu")
 
 import json
 result = {}
-# result['fvd'] = calculate_fvd(videos1, videos2, device)
+result['fvd'] = calculate_fvd(videos1, videos2, device)
 result['ssim'] = calculate_ssim(videos1, videos2)
 result['psnr'] = calculate_psnr(videos1, videos2)
 result['lpips'] = calculate_lpips(videos1, videos2, device)
@@ -45,95 +45,102 @@ print(json.dumps(result, indent=4))
 It means we calculate:
     
 - `FVD-frames[:10]`, `FVD-frames[:11]`, ..., `FVD-frames[:30]` 
-- `avg-PSNR/SSIM/LPIPS-frame[0]`, `avg-PSNR/SSIM/LPIPS-frame[1]`, ..., `avg-PSNR/SSIM/LPIPS-frame[:10]`, and their std.
+- `avg-PSNR/SSIM/LPIPS-frame[0]`, `avg-PSNR/SSIM/LPIPS-frame[1]`, ..., `avg-PSNR/SSIM/LPIPS-frame[:30]`, and their std.
 
 We cannot calculate `FVD-frames[:8]`, and it will pass when calculating, see ps.6.
 
-The result shows: a all-zero matrix and a all-one matrix, their FVD-30 is 151.17. We also calculate their standard deviation. Other metrics are the same.
+The result shows: a all-zero matrix and a all-one matrix, their FVD-30 (FVD[:30]) is 152.15. We also calculate their standard deviation. Other metrics are the same.
 
 ```
 {
     "fvd": {
-        "fvd": {
-            "[:16]": 153.11023578170108,
-            "[:24]": 66.08097153313875,
-            "final": 151.16806952692093
+        "value": {
+            "10": 570.07320378183,
+            "11": 486.1906542471159,
+            "12": 552.3373915075898,
+            "13": 146.6242330185728,
+            "14": 172.57268402948895,
+            "15": 133.88932632116126,
+            "16": 153.11023578170108,
+            "17": 357.56400892781204,
+            "18": 382.1335612721498,
+            "19": 306.7100176942531,
+            "20": 338.18221898178774,
+            "21": 77.95587603163293,
+            "22": 82.49997632357349,
+            "23": 64.41624523513073,
+            "24": 66.08097153313875,
+            "25": 314.4341061962642,
+            "26": 316.8616746151064,
+            "27": 288.884418528541,
+            "28": 287.8192683223724,
+            "29": 152.15076552354864
         },
-        "fvd_per_frame": 8,
-        "fvd_video_setting": [
+        "video_setting": [
             8,
             3,
             30,
             64,
             64
         ],
-        "fvd_video_setting_name": "batch_size, channel, time, heigth, width"
+        "video_setting_name": "batch_size, channel, time, heigth, width"
     },
     "ssim": {
-        "ssim": {
-            "avg[:8]": 9.999000099990664e-05,
-            "avg[:16]": 9.999000099990664e-05,
-            "avg[:24]": 9.999000099990664e-05,
-            "final": 9.999000099990664e-05
+        "value": {
+            "0": 9.999000099990664e-05,
+            ...,
+            "29": 9.999000099990664e-05
         },
-        "ssim_std": {
-            "std[:8]": 0.0,
-            "std[:16]": 0.0,
-            "std[:24]": 0.0,
-            "final": 0.0
+        "value_std": {
+            "0": 0.0,
+            ...,
+            "29": 0.0
         },
-        "ssim_per_frame": 8,
-        "ssim_video_setting": [
+        "video_setting": [
             30,
             3,
             64,
             64
         ],
-        "ssim_video_setting_name": "time, channel, heigth, width"
+        "video_setting_name": "time, channel, heigth, width"
     },
     "psnr": {
-        "psnr": {
-            "avg[:8]": 0.0,
-            "avg[:16]": 0.0,
-            "avg[:24]": 0.0,
-            "final": 0.0
+        "value": {
+            "0": 0.0,
+            ...,
+            "29": 0.0
         },
-        "psnr_std": {
-            "std[:8]": 0.0,
-            "std[:16]": 0.0,
-            "std[:24]": 0.0,
-            "final": 0.0
+        "value_std": {
+            "0": 0.0,
+            ...,
+            "29": 0.0
         },
-        "psnr_per_frame": 8,
-        "psnr_video_setting": [
+        "video_setting": [
             30,
             3,
             64,
             64
         ],
-        "psnr_video_setting_name": "time, channel, heigth, width"
+        "video_setting_name": "time, channel, heigth, width"
     },
     "lpips": {
-        "lpips": {
-            "avg[:8]": 0.8140146732330322,
-            "avg[:16]": 0.8140146732330322,
-            "avg[:24]": 0.8140146732330322,
-            "final": 0.8140146732330322
+        "value": {
+            "0": 0.8140146732330322,
+            ...,
+            "29": 0.8140146732330322
         },
-        "lpips_std": {
-            "std[:8]": 0.0,
-            "std[:16]": 0.0,
-            "std[:24]": 0.0,
-            "final": 0.0
+        "value_std": {
+            "0": 0.0,
+            ...,
+            "29": 0.0
         },
-        "lpips_per_frame": 8,
-        "lpips_video_setting": [
+        "video_setting": [
             30,
             3,
             64,
             64
         ],
-        "lpips_video_setting_name": "time, channel, heigth, width"
+        "video_setting_name": "time, channel, heigth, width"
     }
 }
 ```

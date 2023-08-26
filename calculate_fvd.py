@@ -32,7 +32,7 @@ def calculate_fvd(videos1, videos2, device):
 
     fvd_results = {}
 
-    for clip_timestamp in tqdm(videos1.shape[-3]):
+    for clip_timestamp in tqdm(range(videos1.shape[-3])):
 
         # for calculate FVD, each clip_timestamp must >= 10
         if clip_timestamp < 10:
@@ -48,7 +48,7 @@ def calculate_fvd(videos1, videos2, device):
         feats2 = get_fvd_feats(videos_clip2, i3d=i3d, device=device)
       
         # calculate FVD when timestamps[:clip]
-        fvd_results[f'clip_timestamp'] = frechet_distance(feats1, feats2)
+        fvd_results[clip_timestamp] = frechet_distance(feats1, feats2)
 
     result = {
         "value": fvd_results,
