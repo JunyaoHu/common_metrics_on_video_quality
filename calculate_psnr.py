@@ -17,7 +17,7 @@ def img_psnr(img1, img2):
 def trans(x):
     return x
 
-def calculate_psnr(videos1, videos2, calculate_per_frame, calculate_final):
+def calculate_psnr(videos1, videos2):
     print("calculate_psnr...")
 
     # videos [batch_size, timestamps, channel, h, w]
@@ -26,7 +26,7 @@ def calculate_psnr(videos1, videos2, calculate_per_frame, calculate_final):
 
     videos1 = trans(videos1)
     videos2 = trans(videos2)
-    
+
     psnr_results = []
     
     for video_num in tqdm(range(videos1.shape[0])):
@@ -54,20 +54,15 @@ def calculate_psnr(videos1, videos2, calculate_per_frame, calculate_final):
     psnr = {}
     psnr_std = {}
 
-    for clip_timestamp in range(calculate_per_frame, len(video1)+1, calculate_per_frame):
-        psnr[f'avg[:{clip_timestamp}]'] = np.mean(psnr_results[:,:clip_timestamp])
-        psnr_std[f'std[:{clip_timestamp}]'] = np.std(psnr_results[:,:clip_timestamp])
+    for clip_timestamp in range(len(video1)):
+        psnr[clip_timestamp] = np.mean(psnr_results[:,clip_timestamp])
+        psnr_std[clip_timestamp] = np.std(psnr_results[:,clip_timestamp])
 
-    if calculate_final:
-        psnr['final'] = np.mean(psnr_results)
-        psnr_std['final'] = np.std(psnr_results)
-    
     result = {
-        "psnr": psnr,
-        "psnr_std": psnr_std,
-        "psnr_per_frame": calculate_per_frame,
-        "psnr_video_setting": video1.shape,
-        "psnr_video_setting_name": "time, channel, heigth, width",
+        "value": psnr,
+        "value_std": psnr_std,
+        "video_setting": video1.shape,
+        "video_setting_name": "time, channel, heigth, width",
     }
 
     return result
@@ -79,16 +74,12 @@ def main():
     VIDEO_LENGTH = 50
     CHANNEL = 3
     SIZE = 64
-    CALCULATE_PER_FRAME = 5
-    CALCULATE_FINAL = True
     videos1 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
     videos2 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
-    device = torch.device("cuda")
 
     import json
-    result = calculate_psnr(videos1, videos2, CALCULATE_PER_FRAME, CALCULATE_FINAL)
+    result = calculate_psnr(videos1, videos2)
     print(json.dumps(result, indent=4))
-
 
 if __name__ == "__main__":
     main()

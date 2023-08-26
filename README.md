@@ -1,14 +1,21 @@
 # common_metrics_on_video_quality
 
-you can calculate Frechét Video Distance (FVD), the peak-signal-to-noise ratio (PSNR), the structural similarity index measure (SSIM) and the learned perceptual image patch similarity (LPIPS) easily.
+You can easily calculate the following video quality metrics:
 
-As for FVD, this code is from [MVCD model project](https://github.com/voletiv/mcvd-pytorch) and other websites and projects, I've just extracted the part of it that's relevant to the calculation. This code can be used to evaluate FVD scores for generative or predictive models. 
+- FVD: Frechét Video Distance
+- PSNR: peak-signal-to-noise ratio
+- SSIM: structural similarity index measure
+- LPIPS: learned perceptual image patch similarity
 
-ps: pixel value should be in [0, 1], support grayscale and RGB.
+As for FVD, the code refers to [MVCD](https://github.com/voletiv/mcvd-pytorch) and other websites and projects, I've just extracted the part of it that's relevant to the calculation. This code can be used to evaluate FVD scores for generative or predictive models. 
+
+- This project supports grayscale and RGB videos.
+- This project supports Ubuntu, but maybe something is wrong with Windows. If you can solve it, welcome any PR.
+- **If the project cannot run correctly, please give me an issue or PR~**
 
 # Example
 
-8 videos of a batch, 30 frames, 3 channels, 64x64 size, calculate per 8 frames, and calculate to final.
+8 videos of a batch, 10 frames, 3 channels, 64x64 size.
 
 ```
 import torch
@@ -17,32 +24,32 @@ from calculate_psnr import calculate_psnr
 from calculate_ssim import calculate_ssim
 from calculate_lpips import calculate_lpips
 
-# ps: pixel value should be in [0, 1]!
-
 NUMBER_OF_VIDEOS = 8
 VIDEO_LENGTH = 30
 CHANNEL = 3
 SIZE = 64
-CALCULATE_PER_FRAME = 8
-CALCULATE_FINAL = True
 videos1 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
 videos2 = torch.ones(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
 device = torch.device("cuda")
+device = torch.device("cpu")
 
 import json
 result = {}
-result['fvd'] = calculate_fvd(videos1, videos2, CALCULATE_PER_FRAME, CALCULATE_FINAL, device)
-result['ssim'] = calculate_ssim(videos1, videos2, CALCULATE_PER_FRAME, CALCULATE_FINAL)
-result['psnr'] = calculate_psnr(videos1, videos2, CALCULATE_PER_FRAME, CALCULATE_FINAL)
-result['lpips'] = calculate_lpips(videos1, videos2, CALCULATE_PER_FRAME, CALCULATE_FINAL, device)
+# result['fvd'] = calculate_fvd(videos1, videos2, device)
+result['ssim'] = calculate_ssim(videos1, videos2)
+result['psnr'] = calculate_psnr(videos1, videos2)
+result['lpips'] = calculate_lpips(videos1, videos2, device)
 print(json.dumps(result, indent=4))
 ```
 
-it means we calculate `FVD-frames[:16]`, `FVD-frames[:24]`, `FVD-frames[:final]` (it means `FVD-frames[:30]`) , `avg-PSNR/SSIM/LPIPS-frame[:8]`, `avg-PSNR/SSIM/LPIPS-frame[:16]`, `avg-PSNR/SSIM/LPIPS-frame[:24]`, `avg-PSNR/SSIM/LPIPS-frame[:final]` (it means `avg-PSNR/SSIM/LPIPS-frame[:30]`) , and their std.
+It means we calculate:
+    
+- `FVD-frames[:10]`, `FVD-frames[:11]`, ..., `FVD-frames[:30]` 
+- `avg-PSNR/SSIM/LPIPS-frame[0]`, `avg-PSNR/SSIM/LPIPS-frame[1]`, ..., `avg-PSNR/SSIM/LPIPS-frame[:10]`, and their std.
 
-we cannot calculate `FVD-frames[:8]`, and it will pass when calculating, see ps.6.
+We cannot calculate `FVD-frames[:8]`, and it will pass when calculating, see ps.6.
 
-a all-zero matrix and a all-one matrix, their FVD-30 is 151.17. We also calculate their standard deviation. Other metrics are the same.
+The result shows: a all-zero matrix and a all-one matrix, their FVD-30 is 151.17. We also calculate their standard deviation. Other metrics are the same.
 
 ```
 {
@@ -131,13 +138,13 @@ a all-zero matrix and a all-one matrix, their FVD-30 is 151.17. We also calculat
 }
 ```
 
-# PS before run: 
+# Notice: 
 
-1. you should download `i3d_torchscript.pt` from [here](https://www.dropbox.com/s/ge9e5ujwgetktms/i3d_torchscript.pt) or you can download `i3d_pretrained_400.pt` from [here](https://onedrive.live.com/download?cid=78EEF3EB6AE7DBCB&resid=78EEF3EB6AE7DBCB%21199&authkey=AApKdFHPXzWLNyI), you download random one and put it into fvd folder should be fine.
-2. you should `pip install lpips`
-3. pixel value should be in [0, 1].
-4. for gray-scale, we muitiply to 3 channels [as it says](https://github.com/richzhang/PerceptualSimilarity/issues/23#issuecomment-492368812)
-5. we average SSIM when images have 3 channels, ssim is the only metric extremely sensitive to gray being compared to b/w.
-6. since frames num should > 10 to calculate FVD, so FVD calculation begins from the first multiple of CALCULATE_PER_FRAME greater than 10, like upper example.
-
-If code cannot run correctly, please create an issue here~
+1. You should `pip install lpips` first.
+3. Make sure the pixel value of videos should be in [0, 1].
+2. If you have something wrong with downloading FVD pre-trained model, you should manually download any of the following and put it into fvd folder. 
+    - `i3d_torchscript.pt` from [here](https://www.dropbox.com/s/ge9e5ujwgetktms/i3d_torchscript.pt) 
+    - `i3d_pretrained_400.pt` from [here](https://onedrive.live.com/download?cid=78EEF3EB6AE7DBCB&resid=78EEF3EB6AE7DBCB%21199&authkey=AApKdFHPXzWLNyI)
+4. For grayscale videos, we multiply to 3 channels [as it says](https://github.com/richzhang/PerceptualSimilarity/issues/23#issuecomment-492368812).
+5. We average SSIM when images have 3 channels, ssim is the only metric extremely sensitive to gray being compared to b/w.
+6. Since `frames_num` should > 10 when calculating FVD, so FVD calculation begins from 10th frame, like upper example.

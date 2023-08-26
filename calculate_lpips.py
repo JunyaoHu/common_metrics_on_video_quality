@@ -22,7 +22,7 @@ def trans(x):
 
     return x
 
-def calculate_lpips(videos1, videos2, calculate_per_frame, calculate_final, device):
+def calculate_lpips(videos1, videos2, device):
     # image should be RGB, IMPORTANT: normalized to [-1,1]
     print("calculate_lpips...")
 
@@ -34,7 +34,7 @@ def calculate_lpips(videos1, videos2, calculate_per_frame, calculate_final, devi
     # value range [0, 1] -> [-1, 1]
     videos1 = trans(videos1)
     videos2 = trans(videos2)
-    
+
     lpips_results = []
 
     for video_num in tqdm(range(videos1.shape[0])):
@@ -49,8 +49,8 @@ def calculate_lpips(videos1, videos2, calculate_per_frame, calculate_final, devi
             # img [timestamps[x], channel, h, w]
             # img [channel, h, w] tensor
 
-            img1 = video1[clip_timestamp].unsqueeze(0).cuda()
-            img2 = video2[clip_timestamp].unsqueeze(0).cuda()
+            img1 = video1[clip_timestamp].unsqueeze(0).to(device)
+            img2 = video2[clip_timestamp].unsqueeze(0).to(device)
             
             loss_fn.to(device)
 
@@ -63,20 +63,16 @@ def calculate_lpips(videos1, videos2, calculate_per_frame, calculate_final, devi
     lpips = {}
     lpips_std = {}
 
-    for clip_timestamp in range(calculate_per_frame, len(video1)+1, calculate_per_frame):
-        lpips[f'avg[:{clip_timestamp}]'] = np.mean(lpips_results[:,:clip_timestamp])
-        lpips_std[f'std[:{clip_timestamp}]'] = np.std(lpips_results[:,:clip_timestamp])
+    for clip_timestamp in range(len(video1)):
+        lpips[clip_timestamp] = np.mean(lpips_results[:,clip_timestamp])
+        lpips_std[clip_timestamp] = np.std(lpips_results[:,clip_timestamp])
 
-    if calculate_final:
-        lpips['final'] = np.mean(lpips_results)
-        lpips_std['final'] = np.std(lpips_results)
 
     result = {
-        "lpips": lpips,
-        "lpips_std": lpips_std,
-        "lpips_per_frame": calculate_per_frame,
-        "lpips_video_setting": video1.shape,
-        "lpips_video_setting_name": "time, channel, heigth, width",
+        "value": lpips,
+        "value_std": lpips_std,
+        "video_setting": video1.shape,
+        "video_setting_name": "time, channel, heigth, width",
     }
 
     return result
@@ -88,14 +84,13 @@ def main():
     VIDEO_LENGTH = 50
     CHANNEL = 3
     SIZE = 64
-    CALCULATE_PER_FRAME = 5
-    CALCULATE_FINAL = True
     videos1 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
     videos2 = torch.ones(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
     device = torch.device("cuda")
+    # device = torch.device("cpu")
 
     import json
-    result = calculate_lpips(videos1, videos2, CALCULATE_PER_FRAME, CALCULATE_FINAL, device)
+    result = calculate_lpips(videos1, videos2, device)
     print(json.dumps(result, indent=4))
 
 if __name__ == "__main__":
