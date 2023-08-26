@@ -138,13 +138,13 @@ The result shows: a all-zero matrix and a all-one matrix, their FVD-30 is 151.17
 }
 ```
 
-# Notice: 
+# Notice
 
 1. You should `pip install lpips` first.
 3. Make sure the pixel value of videos should be in [0, 1].
-2. If you have something wrong with downloading FVD pre-trained model, you should manually download any of the following and put it into fvd folder. 
+2. If you have something wrong with downloading FVD pre-trained model, you should manually download any of the following and put it into FVD folder. 
     - `i3d_torchscript.pt` from [here](https://www.dropbox.com/s/ge9e5ujwgetktms/i3d_torchscript.pt) 
     - `i3d_pretrained_400.pt` from [here](https://onedrive.live.com/download?cid=78EEF3EB6AE7DBCB&resid=78EEF3EB6AE7DBCB%21199&authkey=AApKdFHPXzWLNyI)
 4. For grayscale videos, we multiply to 3 channels [as it says](https://github.com/richzhang/PerceptualSimilarity/issues/23#issuecomment-492368812).
 5. We average SSIM when images have 3 channels, ssim is the only metric extremely sensitive to gray being compared to b/w.
-6. Since `frames_num` should > 10 when calculating FVD, so FVD calculation begins from 10th frame, like upper example.
+6. Since `frames_num` should > 10 when calculating FVD, so FVD calculation begins from 10-th frame, like upper example.
