@@ -155,3 +155,8 @@ The result shows: a all-zero matrix and a all-one matrix, their FVD-30 (FVD[:30]
 4. For grayscale videos, we multiply to 3 channels [as it says](https://github.com/richzhang/PerceptualSimilarity/issues/23#issuecomment-492368812).
 5. We average SSIM when images have 3 channels, ssim is the only metric extremely sensitive to gray being compared to b/w.
 6. Since `frames_num` should > 10 when calculating FVD, so FVD calculation begins from 10-th frame, like upper example.
+
+# Star Trend
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=JunyaoHu/common_metrics_on_video_quality&type=Date)](https://star-history.com/#JunyaoHu/common_metrics_on_video_quality&Date)
