@@ -29,13 +29,14 @@ import torch.nn.functional as F
 # https://github.com/universome/fvd-comparison
 i3D_WEIGHTS_URL = "https://www.dropbox.com/s/ge9e5ujwgetktms/i3d_torchscript.pt"
 
-def load_i3d_pretrained(device):
+def load_i3d_pretrained(device=torch.device('cpu')):
     filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'i3d_torchscript.pt')
+    print(filepath)
     if not os.path.exists(filepath):
-        print(f"download i3d_pretrained from {i3D_WEIGHTS_URL} to {filepath}")
-        # os.system(f"wget -O {filepath} {i3D_WEIGHTS_URL} ")
+        print(f"preparing for download {i3D_WEIGHTS_URL}, you can download it by yourself.")
+        os.system(f"wget {i3D_WEIGHTS_URL} -O {filepath}")
     i3d = torch.jit.load(filepath).eval().to(device)
-    # i3d = torch.nn.DataParallel(i3d)
+    i3d = torch.nn.DataParallel(i3d)
     return i3d
 
 
