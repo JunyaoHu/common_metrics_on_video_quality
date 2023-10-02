@@ -29,14 +29,13 @@ import torch.nn.functional as F
 # https://github.com/universome/fvd-comparison
 i3D_WEIGHTS_URL = "https://www.dropbox.com/s/ge9e5ujwgetktms/i3d_torchscript.pt"
 
-def load_i3d_pretrained(device=torch.device('cpu')):
+def load_i3d_pretrained(device):
     filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'i3d_torchscript.pt')
-    print(filepath)
     if not os.path.exists(filepath):
-        print(f"preparing for download {i3D_WEIGHTS_URL}, you can download it by yourself.")
-        os.system(f"wget {i3D_WEIGHTS_URL} -O {filepath}")
+        print(f"download i3d_pretrained from {i3D_WEIGHTS_URL} to {filepath}")
+        # os.system(f"wget -O {filepath} {i3D_WEIGHTS_URL} ")
     i3d = torch.jit.load(filepath).eval().to(device)
-    i3d = torch.nn.DataParallel(i3d)
+    # i3d = torch.nn.DataParallel(i3d)
     return i3d
 
 
@@ -187,70 +186,70 @@ def preprocess_single(video, resolution=224, sequence_length=None):
     return video.contiguous()
 
 
-def get_logits(i3d, videos, device):
-    #assert videos.shape[0] % 2 == 0
-    logits = torch.empty(0, 400)
-    with torch.no_grad():
-        for i in range(len(videos)):
-            # logits.append(i3d(preprocess_single(videos[i]).unsqueeze(0).to(device)).detach().cpu())
-            logits = torch.vstack([logits, i3d(preprocess_single(videos[i]).unsqueeze(0).to(device)).detach().cpu()])
-    # logits = torch.cat(logits, dim=0)
-    return logits
+# def get_logits(i3d, videos, device):
+#     #assert videos.shape[0] % 2 == 0
+#     logits = torch.empty(0, 400)
+#     with torch.no_grad():
+#         for i in range(len(videos)):
+#             # logits.append(i3d(preprocess_single(videos[i]).unsqueeze(0).to(device)).detach().cpu())
+#             logits = torch.vstack([logits, i3d(preprocess_single(videos[i]).unsqueeze(0).to(device)).detach().cpu()])
+#     # logits = torch.cat(logits, dim=0)
+#     return logits
 
 
-def get_fvd_logits(videos, i3d, device):
-    # videos in [0, 1] as torch tensor BCTHW
-    # videos = [preprocess_single(video) for video in videos]
-    embeddings = get_logits(i3d, videos, device)
-    return embeddings
+# def get_fvd_logits(videos, i3d, device):
+#     # videos in [0, 1] as torch tensor BCTHW
+#     # videos = [preprocess_single(video) for video in videos]
+#     embeddings = get_logits(i3d, videos, device)
+#     return embeddings
 
 
-# https://github.com/tensorflow/gan/blob/de4b8da3853058ea380a6152bd3bd454013bf619/tensorflow_gan/python/eval/classifier_metrics.py#L161
-def _symmetric_matrix_square_root(mat, eps=1e-10):
-    u, s, v = torch.linalg.svd(mat)
-    si = torch.where(s < eps, s, torch.sqrt(s))
-    return torch.matmul(torch.matmul(u, torch.diag(si)), v.t())
+# # https://github.com/tensorflow/gan/blob/de4b8da3853058ea380a6152bd3bd454013bf619/tensorflow_gan/python/eval/classifier_metrics.py#L161
+# def _symmetric_matrix_square_root(mat, eps=1e-10):
+#     u, s, v = torch.linalg.svd(mat)
+#     si = torch.where(s < eps, s, torch.sqrt(s))
+#     return torch.matmul(torch.matmul(u, torch.diag(si)), v.t())
 
 
-# https://github.com/tensorflow/gan/blob/de4b8da3853058ea380a6152bd3bd454013bf619/tensorflow_gan/python/eval/classifier_metrics.py#L400
-def trace_sqrt_product(sigma, sigma_v):
-    sqrt_sigma = _symmetric_matrix_square_root(sigma)
-    sqrt_a_sigmav_a = torch.matmul(sqrt_sigma, torch.matmul(sigma_v, sqrt_sigma))
-    return torch.trace(_symmetric_matrix_square_root(sqrt_a_sigmav_a))
+# # https://github.com/tensorflow/gan/blob/de4b8da3853058ea380a6152bd3bd454013bf619/tensorflow_gan/python/eval/classifier_metrics.py#L400
+# def trace_sqrt_product(sigma, sigma_v):
+#     sqrt_sigma = _symmetric_matrix_square_root(sigma)
+#     sqrt_a_sigmav_a = torch.matmul(sqrt_sigma, torch.matmul(sigma_v, sqrt_sigma))
+#     return torch.trace(_symmetric_matrix_square_root(sqrt_a_sigmav_a))
 
 
-# https://discuss.pytorch.org/t/covariance-and-gradient-support/16217/2
-def cov(m, rowvar=False):
-    '''Estimate a covariance matrix given data.
+# # https://discuss.pytorch.org/t/covariance-and-gradient-support/16217/2
+# def cov(m, rowvar=False):
+#     '''Estimate a covariance matrix given data.
 
-    Covariance indicates the level to which two variables vary together.
-    If we examine N-dimensional samples, `X = [x_1, x_2, ... x_N]^T`,
-    then the covariance matrix element `C_{ij}` is the covariance of
-    `x_i` and `x_j`. The element `C_{ii}` is the variance of `x_i`.
+#     Covariance indicates the level to which two variables vary together.
+#     If we examine N-dimensional samples, `X = [x_1, x_2, ... x_N]^T`,
+#     then the covariance matrix element `C_{ij}` is the covariance of
+#     `x_i` and `x_j`. The element `C_{ii}` is the variance of `x_i`.
 
-    Args:
-        m: A 1-D or 2-D array containing multiple variables and observations.
-            Each row of `m` represents a variable, and each column a single
-            observation of all those variables.
-        rowvar: If `rowvar` is True, then each row represents a
-            variable, with observations in the columns. Otherwise, the
-            relationship is transposed: each column represents a variable,
-            while the rows contain observations.
+#     Args:
+#         m: A 1-D or 2-D array containing multiple variables and observations.
+#             Each row of `m` represents a variable, and each column a single
+#             observation of all those variables.
+#         rowvar: If `rowvar` is True, then each row represents a
+#             variable, with observations in the columns. Otherwise, the
+#             relationship is transposed: each column represents a variable,
+#             while the rows contain observations.
 
-    Returns:
-        The covariance matrix of the variables.
-    '''
-    if m.dim() > 2:
-        raise ValueError('m has more than 2 dimensions')
-    if m.dim() < 2:
-        m = m.view(1, -1)
-    if not rowvar and m.size(0) != 1:
-        m = m.t()
+#     Returns:
+#         The covariance matrix of the variables.
+#     '''
+#     if m.dim() > 2:
+#         raise ValueError('m has more than 2 dimensions')
+#     if m.dim() < 2:
+#         m = m.view(1, -1)
+#     if not rowvar and m.size(0) != 1:
+#         m = m.t()
 
-    fact = 1.0 / (m.size(1) - 1) # unbiased estimate
-    m -= torch.mean(m, dim=1, keepdim=True)
-    mt = m.t()  # if complex: mt = m.t().conj()
-    return fact * m.matmul(mt).squeeze()
+#     fact = 1.0 / (m.size(1) - 1) # unbiased estimate
+#     m -= torch.mean(m, dim=1, keepdim=True)
+#     mt = m.t()  # if complex: mt = m.t().conj()
+#     return fact * m.matmul(mt).squeeze()
 
 
 # def frechet_distance(x1, x2):
