@@ -12,6 +12,7 @@ As for FVD, the code refers to [MVCD](https://github.com/voletiv/mcvd-pytorch) a
 - This project supports grayscale and RGB videos.
 - This project supports Ubuntu, but maybe something is wrong with Windows. If you can solve it, welcome any PR.
 - **If the project cannot run correctly, please give me an issue or PR~**
+- use `scipy==1.7.3/1.9.3`, if you use 1.11.3, you will calculate a WRONG FVD VALUE!!! For more details see below Notice.
 
 # Example
 
@@ -155,6 +156,7 @@ The result shows: a all-zero matrix and a all-one matrix, their FVD-30 (FVD[:30]
 4. For grayscale videos, we multiply to 3 channels [as it says](https://github.com/richzhang/PerceptualSimilarity/issues/23#issuecomment-492368812).
 5. We average SSIM when images have 3 channels, ssim is the only metric extremely sensitive to gray being compared to b/w.
 6. Since `frames_num` should > 10 when calculating FVD, so FVD calculation begins from 10-th frame, like upper example.
+7. You had better use `scipy==1.7.3/1.9.3`, if you use 1.11.3, **you will calculate a WRONG FVD VALUE!!! **
 
 # Star Trend
 ## Star History
