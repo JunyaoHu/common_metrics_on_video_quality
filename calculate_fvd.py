@@ -12,9 +12,9 @@ def trans(x):
 
     return x
 
-def calculate_fvd(videos1, videos2, device, method='mcvd'):
+def calculate_fvd(videos1, videos2, device, method='styleganv'):
 
-    if method == 'mcvd':
+    if method == 'styleganv':
         from fvd.styleganv.fvd import get_fvd_feats, frechet_distance, load_i3d_pretrained
     elif method == 'videogpt':
         from fvd.videogpt.fvd import load_i3d_pretrained
@@ -81,7 +81,7 @@ def main():
     result = calculate_fvd(videos1, videos2, device, method='videogpt')
     print(json.dumps(result, indent=4))
 
-    result = calculate_fvd(videos1, videos2, device, method='stylegan')
+    result = calculate_fvd(videos1, videos2, device, method='styleganv')
     print(json.dumps(result, indent=4))
 
 if __name__ == "__main__":

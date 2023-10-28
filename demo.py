@@ -17,7 +17,8 @@ device = torch.device("cuda")
 
 import json
 result = {}
-result['fvd'] = calculate_fvd(videos1, videos2, device)
+result['fvd'] = calculate_fvd(videos1, videos2, device, method='styleganv')
+# result['fvd'] = calculate_fvd(videos1, videos2, device, method='videogpt')
 result['ssim'] = calculate_ssim(videos1, videos2)
 result['psnr'] = calculate_psnr(videos1, videos2)
 result['lpips'] = calculate_lpips(videos1, videos2, device)

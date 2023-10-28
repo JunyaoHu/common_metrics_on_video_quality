@@ -2,17 +2,21 @@
 
 You can easily calculate the following video quality metrics:
 
-- FVD: Frechét Video Distance
-- PSNR: peak-signal-to-noise ratio
-- SSIM: structural similarity index measure
-- LPIPS: learned perceptual image patch similarity
+- **FVD**: Frechét Video Distance
+- **SSIM**: structural similarity index measure
+- **LPIPS**: learned perceptual image patch similarity
+- **PSNR**: peak-signal-to-noise ratio
 
-As for FVD, the code refers to [MVCD](https://github.com/voletiv/mcvd-pytorch) and other websites and projects, I've just extracted the part of it that's relevant to the calculation. This code can be used to evaluate FVD scores for generative or predictive models. 
+As for FVD
+ 1. The codebase refers to [MVCD](https://github.com/voletiv/mcvd-pytorch) and other websites and projects, I've just extracted the part of it that's relevant to the calculation. This code can be used to evaluate FVD scores for generative or predictive models. 
+ 2. Now **we have supported 2 pytorch-based FVD implementations** ([videogpt](https://github.com/wilson1yan/VideoGPT) and [styleganv](https://github.com/universome/stylegan-v), see issue [#4](https://github.com/JunyaoHu/common_metrics_on_video_quality/issues/4)). Their calculations are almost identical, and the difference is negligible.
+
+And...
 
 - This project supports grayscale and RGB videos.
 - This project supports Ubuntu, but maybe something is wrong with Windows. If you can solve it, welcome any PR.
 - **If the project cannot run correctly, please give me an issue or PR~**
-- use `scipy==1.7.3/1.9.3`, if you use 1.11.3, you will calculate a WRONG FVD VALUE!!! For more details see below Notice.
+- For more details see below Notice.
 
 # Example
 
@@ -36,7 +40,8 @@ device = torch.device("cpu")
 
 import json
 result = {}
-result['fvd'] = calculate_fvd(videos1, videos2, device)
+result['fvd'] = calculate_fvd(videos1, videos2, device, method='styleganv')
+# result['fvd'] = calculate_fvd(videos1, videos2, device, method='videogpt')
 result['ssim'] = calculate_ssim(videos1, videos2)
 result['psnr'] = calculate_psnr(videos1, videos2)
 result['lpips'] = calculate_lpips(videos1, videos2, device)
@@ -50,7 +55,7 @@ It means we calculate:
 
 We cannot calculate `FVD-frames[:8]`, and it will pass when calculating, see ps.6.
 
-The result shows: a all-zero matrix and a all-one matrix, their FVD-30 (FVD[:30]) is 152.15. We also calculate their standard deviation. Other metrics are the same.
+The result shows: a all-zero matrix and a all-one matrix, their FVD-30 (FVD[:30]) is 152.15. We also calculate their standard deviation. Other metrics are the same. And we use the calculation method of styleganv.
 
 ```
 {
@@ -155,8 +160,8 @@ The result shows: a all-zero matrix and a all-one matrix, their FVD-30 (FVD[:30]
     - `i3d_pretrained_400.pt` from [here](https://onedrive.live.com/download?cid=78EEF3EB6AE7DBCB&resid=78EEF3EB6AE7DBCB%21199&authkey=AApKdFHPXzWLNyI)
 4. For grayscale videos, we multiply to 3 channels [as it says](https://github.com/richzhang/PerceptualSimilarity/issues/23#issuecomment-492368812).
 5. We average SSIM when images have 3 channels, ssim is the only metric extremely sensitive to gray being compared to b/w.
-6. Since `frames_num` should > 10 when calculating FVD, so FVD calculation begins from 10-th frame, like upper example.
-7. You had better use `scipy==1.7.3/1.9.3`, if you use 1.11.3, **you will calculate a WRONG FVD VALUE!!! **
+6. Because the i3d model downsamples in the time dimension, `frames_num` should > 10 when calculating FVD, so FVD calculation begins from 10-th frame, like upper example.
+7. You had better use `scipy==1.7.3/1.9.3`, if you use 1.11.3, **you will calculate a WRONG FVD VALUE!!!**
 
 # Star Trend
 ## Star History
