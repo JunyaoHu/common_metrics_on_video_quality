@@ -1,4 +1,3 @@
-from fvd.fvd import get_fvd_feats, frechet_distance, load_i3d_pretrained
 import numpy as np
 import torch
 from tqdm import tqdm
@@ -13,7 +12,15 @@ def trans(x):
 
     return x
 
-def calculate_fvd(videos1, videos2, device):
+def calculate_fvd(videos1, videos2, device, method='mcvd'):
+
+    if method == 'mcvd':
+        from fvd.styleganv.fvd import get_fvd_feats, frechet_distance, load_i3d_pretrained
+    elif method == 'videogpt':
+        from fvd.videogpt.fvd import load_i3d_pretrained
+        from fvd.videogpt.fvd import get_fvd_logits as get_fvd_feats
+        from fvd.videogpt.fvd import frechet_distance
+
     print("calculate_fvd...")
 
     # videos [batch_size, timestamps, channel, h, w]
@@ -71,7 +78,10 @@ def main():
     # device = torch.device("cpu")
 
     import json
-    result = calculate_fvd(videos1, videos2, device)
+    result = calculate_fvd(videos1, videos2, device, method='videogpt')
+    print(json.dumps(result, indent=4))
+
+    result = calculate_fvd(videos1, videos2, device, method='stylegan')
     print(json.dumps(result, indent=4))
 
 if __name__ == "__main__":
