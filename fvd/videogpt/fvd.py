@@ -130,6 +130,6 @@ def get_logits(i3d, videos, device, bs=10):
         logits = []
         for i in range(0, videos.shape[0], bs):
             batch = videos[i:i + bs].to(device)
-            logits.append(i3d(batch))
+            logits.append(i3d.module.extract_features(batch))
         logits = torch.cat(logits, dim=0)
         return logits
