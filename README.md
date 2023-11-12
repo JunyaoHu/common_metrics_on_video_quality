@@ -55,7 +55,7 @@ It means we calculate:
 
 We cannot calculate `FVD-frames[:8]`, and it will pass when calculating, see ps.6.
 
-The result shows: a all-zero matrix and a all-one matrix, their FVD-30 (FVD[:30]) is 152.15. We also calculate their standard deviation. Other metrics are the same. And we use the calculation method of styleganv.
+The result shows: a all-zero matrix and a all-one matrix, their FVD-30 (FVD[:30]) is 151.17 (styleganv method). We also calculate their standard deviation. Other metrics are the same. And we use the calculation method of styleganv.
 
 ```
 {
@@ -80,8 +80,18 @@ The result shows: a all-zero matrix and a all-one matrix, their FVD-30 (FVD[:30]
             "26": 316.8616746151064,
             "27": 288.884418528541,
             "28": 287.8192683223724,
-            "29": 152.15076552354864
+            "29": 152.15076552354864,
+            "30": 151.16806952692093
         },
+        "video_setting": [
+            8,
+            3,
+            30,
+            64,
+            64
+        ],
+        "video_setting_name": "batch_size, channel, time, heigth, width"
+    },
         "video_setting": [
             8,
             3,
