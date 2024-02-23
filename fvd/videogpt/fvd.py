@@ -115,12 +115,13 @@ def frechet_distance(x1, x2):
     x2 = x2.flatten(start_dim=1)
     m, m_w = x1.mean(dim=0), x2.mean(dim=0)
     sigma, sigma_w = cov(x1, rowvar=False), cov(x2, rowvar=False)
-
-    sqrt_trace_component = trace_sqrt_product(sigma, sigma_w)
-    trace = torch.trace(sigma + sigma_w) - 2.0 * sqrt_trace_component
-
     mean = torch.sum((m - m_w) ** 2)
-    fd = trace + mean
+    if x1.shape[0]>1:
+        sqrt_trace_component = trace_sqrt_product(sigma, sigma_w)
+        trace = torch.trace(sigma + sigma_w) - 2.0 * sqrt_trace_component
+        fd = trace + mean
+    else:
+        fd = np.real(mean)
     return float(fd)
 
 
