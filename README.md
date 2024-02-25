@@ -1,4 +1,4 @@
-# common-metrics-on-video-quality
+# common_metrics_on_video_quality
 
 You can easily calculate the following video quality metrics:
 
