@@ -10,6 +10,7 @@ You can easily calculate the following video quality metrics:
 As for FVD
  1. The codebase refers to [MVCD](https://github.com/voletiv/mcvd-pytorch) and other websites and projects, I've just extracted the part of it that's relevant to the calculation. This code can be used to evaluate FVD scores for generative or predictive models. 
  2. Now **we have supported 2 pytorch-based FVD implementations** ([videogpt](https://github.com/wilson1yan/VideoGPT) and [styleganv](https://github.com/universome/stylegan-v), see issue [#4](https://github.com/JunyaoHu/common_metrics_on_video_quality/issues/4)). Their calculations are almost identical, and the difference is negligible.
+ 3. FVD calculates the feature distance between two sets of videos. (the I3D features of each video are do not go through the softmax() function, and the size of the last dimension is 400, not 1024)
 
 And...
 
