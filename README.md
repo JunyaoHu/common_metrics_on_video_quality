@@ -173,6 +173,7 @@ The result shows: a all-zero matrix and a all-one matrix, their FVD-30 (FVD[:30]
 5. We average SSIM when images have 3 channels, ssim is the only metric extremely sensitive to gray being compared to b/w.
 6. Because the i3d model downsamples in the time dimension, `frames_num` should > 10 when calculating FVD, so FVD calculation begins from 10-th frame, like upper example.
 7. You had better use `scipy==1.7.3/1.9.3`, if you use 1.11.3, **you will calculate a WRONG FVD VALUE!!!**
+8. If you are running demo.py on a multi-GPU machine, remember to export CUDA_VISIBLE_DEVICES=0, see [here](https://github.com/JunyaoHu/common_metrics_on_video_quality/issues/13).
 
 # Star Trend
 ## Star History
