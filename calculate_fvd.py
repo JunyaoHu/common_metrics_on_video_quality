@@ -12,7 +12,7 @@ def trans(x):
 
     return x
 
-def calculate_fvd(videos1, videos2, device, method='styleganv'):
+def calculate_fvd(videos1, videos2, device, method='styleganv', only_final=False):
 
     if method == 'styleganv':
         from fvd.styleganv.fvd import get_fvd_feats, frechet_distance, load_i3d_pretrained
@@ -37,27 +37,42 @@ def calculate_fvd(videos1, videos2, device, method='styleganv'):
     videos1 = trans(videos1)
     videos2 = trans(videos2)
 
-    fvd_results = {}
+    fvd_results = []
 
-    # for calculate FVD, each clip_timestamp must >= 10
-    for clip_timestamp in tqdm(range(10, videos1.shape[-3]+1)):
-       
-        # get a video clip
+    if only_final:
+
+        assert videos1.shape[2] >= 10, "for calculate FVD, each clip_timestamp must >= 10"
+
         # videos_clip [batch_size, channel, timestamps[:clip], h, w]
-        videos_clip1 = videos1[:, :, : clip_timestamp]
-        videos_clip2 = videos2[:, :, : clip_timestamp]
+        videos_clip1 = videos1
+        videos_clip2 = videos2
 
         # get FVD features
         feats1 = get_fvd_feats(videos_clip1, i3d=i3d, device=device)
         feats2 = get_fvd_feats(videos_clip2, i3d=i3d, device=device)
-      
+    
         # calculate FVD when timestamps[:clip]
-        fvd_results[clip_timestamp] = frechet_distance(feats1, feats2)
+        fvd_results.append(frechet_distance(feats1, feats2))
+
+    else:
+
+        # for calculate FVD, each clip_timestamp must >= 10
+        for clip_timestamp in tqdm(range(10, videos1.shape[-3]+1)):
+        
+            # get a video clip
+            # videos_clip [batch_size, channel, timestamps[:clip], h, w]
+            videos_clip1 = videos1[:, :, : clip_timestamp]
+            videos_clip2 = videos2[:, :, : clip_timestamp]
+
+            # get FVD features
+            feats1 = get_fvd_feats(videos_clip1, i3d=i3d, device=device)
+            feats2 = get_fvd_feats(videos_clip2, i3d=i3d, device=device)
+        
+            # calculate FVD when timestamps[:clip]
+            fvd_results.append(frechet_distance(feats1, feats2))
 
     result = {
         "value": fvd_results,
-        "video_setting": videos1.shape,
-        "video_setting_name": "batch_size, channel, time, heigth, width",
     }
 
     return result
@@ -66,7 +81,7 @@ def calculate_fvd(videos1, videos2, device, method='styleganv'):
 
 def main():
     NUMBER_OF_VIDEOS = 8
-    VIDEO_LENGTH = 50
+    VIDEO_LENGTH = 30
     CHANNEL = 3
     SIZE = 64
     videos1 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
@@ -74,12 +89,11 @@ def main():
     device = torch.device("cuda")
     # device = torch.device("cpu")
 
-    import json
     result = calculate_fvd(videos1, videos2, device, method='videogpt')
-    print(json.dumps(result, indent=4))
+    print("[fvd-videogpt ]", result["value"])
 
     result = calculate_fvd(videos1, videos2, device, method='styleganv')
-    print(json.dumps(result, indent=4))
+    print("[fvd-styleganv]", result["value"])
 
 if __name__ == "__main__":
     main()

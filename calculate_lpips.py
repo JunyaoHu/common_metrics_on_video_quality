@@ -6,6 +6,10 @@ import math
 import torch
 import lpips
 
+# ignore torchvision UserWarning of 'weights'
+import warnings
+warnings.filterwarnings("ignore")
+
 spatial = True         # Return a spatial map of perceptual distance.
 
 # Linearly calibrated models (LPIPS)
@@ -22,7 +26,7 @@ def trans(x):
 
     return x
 
-def calculate_lpips(videos1, videos2, device):
+def calculate_lpips(videos1, videos2, device, only_final=False):
     # image should be RGB, IMPORTANT: normalized to [-1,1]
     print("calculate_lpips...")
 
@@ -36,6 +40,8 @@ def calculate_lpips(videos1, videos2, device):
     videos2 = trans(videos2)
 
     lpips_results = []
+
+    loss_fn.to(device)
 
     for video_num in tqdm(range(videos1.shape[0])):
         # get a video
@@ -51,8 +57,6 @@ def calculate_lpips(videos1, videos2, device):
 
             img1 = video1[clip_timestamp].unsqueeze(0).to(device)
             img2 = video2[clip_timestamp].unsqueeze(0).to(device)
-            
-            loss_fn.to(device)
 
             # calculate lpips of a video
             lpips_results_of_a_video.append(loss_fn.forward(img1, img2).mean().detach().cpu().tolist())
@@ -60,19 +64,23 @@ def calculate_lpips(videos1, videos2, device):
     
     lpips_results = np.array(lpips_results)
     
-    lpips = {}
-    lpips_std = {}
+    lpips = []
+    lpips_std = []
 
-    for clip_timestamp in range(len(video1)):
-        lpips[clip_timestamp] = np.mean(lpips_results[:,clip_timestamp])
-        lpips_std[clip_timestamp] = np.std(lpips_results[:,clip_timestamp])
+    if only_final:
 
+        lpips.append(np.mean(lpips_results))
+        lpips_std.append(np.std(lpips_results))
+
+    else:
+
+        for clip_timestamp in range(len(video1)):
+            lpips.append(np.mean(lpips_results[:,clip_timestamp]))
+            lpips_std.append(np.std(lpips_results[:,clip_timestamp]))
 
     result = {
         "value": lpips,
         "value_std": lpips_std,
-        "video_setting": video1.shape,
-        "video_setting_name": "time, channel, heigth, width",
     }
 
     return result
@@ -81,7 +89,7 @@ def calculate_lpips(videos1, videos2, device):
 
 def main():
     NUMBER_OF_VIDEOS = 8
-    VIDEO_LENGTH = 50
+    VIDEO_LENGTH = 30
     CHANNEL = 3
     SIZE = 64
     videos1 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
@@ -89,9 +97,9 @@ def main():
     device = torch.device("cuda")
     # device = torch.device("cpu")
 
-    import json
     result = calculate_lpips(videos1, videos2, device)
-    print(json.dumps(result, indent=4))
+    print("[lpips avg]", result["value"])
+    print("[lpips std]", result["value_std"])
 
 if __name__ == "__main__":
     main()

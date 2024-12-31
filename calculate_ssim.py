@@ -25,7 +25,6 @@ def ssim(img1, img2):
  
 def calculate_ssim_function(img1, img2):
     # [0,1]
-    # ssim is the only metric extremely sensitive to gray being compared to b/w 
     if not img1.shape == img2.shape:
         raise ValueError('Input images must have the same dimensions.')
     if img1.ndim == 2:
@@ -44,7 +43,7 @@ def calculate_ssim_function(img1, img2):
 def trans(x):
     return x
 
-def calculate_ssim(videos1, videos2):
+def calculate_ssim(videos1, videos2, only_final=False):
     print("calculate_ssim...")
 
     # videos [batch_size, timestamps, channel, h, w]
@@ -78,18 +77,23 @@ def calculate_ssim(videos1, videos2):
 
     ssim_results = np.array(ssim_results)
 
-    ssim = {}
-    ssim_std = {}
+    ssim = []
+    ssim_std = []
 
-    for clip_timestamp in range(len(video1)):
-        ssim[clip_timestamp] = np.mean(ssim_results[:,clip_timestamp])
-        ssim_std[clip_timestamp] = np.std(ssim_results[:,clip_timestamp])
+    if only_final:
+
+        ssim.append(np.mean(ssim_results))
+        ssim_std.append(np.std(ssim_results))
+
+    else:
+
+        for clip_timestamp in range(len(video1)):
+            ssim.append(np.mean(ssim_results[:,clip_timestamp]))
+            ssim_std.append(np.std(ssim_results[:,clip_timestamp]))
 
     result = {
         "value": ssim,
         "value_std": ssim_std,
-        "video_setting": video1.shape,
-        "video_setting_name": "time, channel, heigth, width",
     }
 
     return result
@@ -98,16 +102,15 @@ def calculate_ssim(videos1, videos2):
 
 def main():
     NUMBER_OF_VIDEOS = 8
-    VIDEO_LENGTH = 50
+    VIDEO_LENGTH = 30
     CHANNEL = 3
     SIZE = 64
     videos1 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
-    videos2 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
-    device = torch.device("cuda")
+    videos2 = torch.ones(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
 
-    import json
     result = calculate_ssim(videos1, videos2)
-    print(json.dumps(result, indent=4))
+    print("[ssim avg]", result["value"])
+    print("[ssim std]", result["value_std"])
 
 if __name__ == "__main__":
     main()

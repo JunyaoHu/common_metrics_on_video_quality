@@ -17,7 +17,7 @@ def img_psnr(img1, img2):
 def trans(x):
     return x
 
-def calculate_psnr(videos1, videos2):
+def calculate_psnr(videos1, videos2, only_final=False):
     print("calculate_psnr...")
 
     # videos [batch_size, timestamps, channel, h, w]
@@ -51,18 +51,23 @@ def calculate_psnr(videos1, videos2):
     
     psnr_results = np.array(psnr_results)
     
-    psnr = {}
-    psnr_std = {}
+    psnr = []
+    psnr_std = []
 
-    for clip_timestamp in range(len(video1)):
-        psnr[clip_timestamp] = np.mean(psnr_results[:,clip_timestamp])
-        psnr_std[clip_timestamp] = np.std(psnr_results[:,clip_timestamp])
+    if only_final:
+
+        psnr.append(np.mean(psnr_results))
+        psnr_std.append(np.std(psnr_results))
+
+    else:
+
+        for clip_timestamp in range(len(video1)):
+            psnr.append(np.mean(psnr_results[:,clip_timestamp]))
+            psnr_std.append(np.std(psnr_results[:,clip_timestamp]))
 
     result = {
         "value": psnr,
         "value_std": psnr_std,
-        "video_setting": video1.shape,
-        "video_setting_name": "time, channel, heigth, width",
     }
 
     return result
@@ -71,15 +76,15 @@ def calculate_psnr(videos1, videos2):
 
 def main():
     NUMBER_OF_VIDEOS = 8
-    VIDEO_LENGTH = 50
+    VIDEO_LENGTH = 30
     CHANNEL = 3
     SIZE = 64
     videos1 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
-    videos2 = torch.zeros(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
+    videos2 = torch.ones(NUMBER_OF_VIDEOS, VIDEO_LENGTH, CHANNEL, SIZE, SIZE, requires_grad=False)
 
-    import json
     result = calculate_psnr(videos1, videos2)
-    print(json.dumps(result, indent=4))
+    print("[psnr avg]", result["value"])
+    print("[psnr std]", result["value_std"])
 
 if __name__ == "__main__":
     main()
