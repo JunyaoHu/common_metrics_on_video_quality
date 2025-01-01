@@ -24,7 +24,7 @@ def get_feats(videos, detector, device, bs=10):
     feats = np.empty((0, 400))
     with torch.no_grad():
         for i in range((len(videos)-1)//bs + 1):
-            feats = np.vstack([feats, detector(torch.stack([preprocess_single(video) for video in videos[i*bs:(i+1)*bs]]).to(device), **detector_kwargs).detach().cpu().numpy()])
+            feats = np.vstack([feats, detector(x=torch.stack([preprocess_single(video) for video in videos[i*bs:(i+1)*bs]]).to(device), **detector_kwargs).detach().cpu().numpy()])
     return feats
 
 

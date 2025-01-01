@@ -17,9 +17,8 @@ def calculate_fvd(videos1, videos2, device, method='styleganv', only_final=False
     if method == 'styleganv':
         from fvd.styleganv.fvd import get_fvd_feats, frechet_distance, load_i3d_pretrained
     elif method == 'videogpt':
-        from fvd.videogpt.fvd import load_i3d_pretrained
+        from fvd.videogpt.fvd import load_i3d_pretrained, frechet_distance
         from fvd.videogpt.fvd import get_fvd_logits as get_fvd_feats
-        from fvd.videogpt.fvd import frechet_distance
 
     print("calculate_fvd...")
 
@@ -43,17 +42,17 @@ def calculate_fvd(videos1, videos2, device, method='styleganv', only_final=False
 
         assert videos1.shape[2] >= 10, "for calculate FVD, each clip_timestamp must >= 10"
 
-        # videos_clip [batch_size, channel, timestamps[:clip], h, w]
+        # videos_clip [batch_size, channel, timestamps, h, w]
         videos_clip1 = videos1
         videos_clip2 = videos2
 
         # get FVD features
         feats1 = get_fvd_feats(videos_clip1, i3d=i3d, device=device)
         feats2 = get_fvd_feats(videos_clip2, i3d=i3d, device=device)
-    
-        # calculate FVD when timestamps[:clip]
-        fvd_results.append(frechet_distance(feats1, feats2))
 
+        # calculate FVD
+        fvd_results.append(frechet_distance(feats1, feats2))
+    
     else:
 
         # for calculate FVD, each clip_timestamp must >= 10
@@ -89,10 +88,10 @@ def main():
     device = torch.device("cuda")
     # device = torch.device("cpu")
 
-    result = calculate_fvd(videos1, videos2, device, method='videogpt')
+    result = calculate_fvd(videos1, videos2, device, method='videogpt', only_final=False)
     print("[fvd-videogpt ]", result["value"])
 
-    result = calculate_fvd(videos1, videos2, device, method='styleganv')
+    result = calculate_fvd(videos1, videos2, device, method='styleganv', only_final=False)
     print("[fvd-styleganv]", result["value"])
 
 if __name__ == "__main__":

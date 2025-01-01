@@ -18,7 +18,6 @@ conda create -n test python=3.9
 conda install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 pytorch-cuda=11.7 -c pytorch -c nvidia
 conda install "numpy<2.0"
 pip install opencv-python tqdm einops
-
 git clone https://github.com/JunyaoHu/common_metrics_on_video_quality
 ```
 
@@ -106,7 +105,28 @@ We can calculate:
 }
 ```
 
-# Notice
+## Comparison with orginal Tensorflow FVD metric
+
+If you want to use the original version of FVD which comes from Tensorflow, and compare FVD result with this repo's implementation:
+
+You should create a tensorflow-1.0 envrironment:
+
+```
+# https://github.com/universome/fvd-comparison/blob/master/requirements.txt
+conda create -n tf1 python=3.7
+pip install tensorflow==1.15.0 tensorflow-gan==1.0.0.dev0 tensorflow-hub==0.12.0 scipy==1.7.3 tqdm
+
+export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+calculate_fvd_tensorflow.py
+
+# calculate_fvd(videos1, videos2, only_final=True)
+# output:
+# [fvd-tensorflow] [151.39244]
+```
+
+
+
+## Notice
 
 1. **For pixel value**: Make sure the pixel value of videos should be in $[0, 1]$.
 3. **For all metrics**: If videos are grayscale, we multiply them to 3 channels [as it says](https://github.com/richzhang/PerceptualSimilarity/issues/23#issuecomment-492368812).
@@ -119,7 +139,7 @@ We can calculate:
     - **Constrain for video length**: Because the i3d model downsamples in the time dimension, we should make sure `frames_num > 10` when calculating FVD, so FVD calculation begins from 10-th frame.
     - **Calculating process**: FVD calculates the feature distance between two sets of videos (The I3D features of each video are do not go through the `softmax()` function, and the size of the last dimension is 400, not 1024).
 6. **Only support single-GPU inference**: If you are running `demo.py` on your multi-GPU machine, you can set `CUDA_VISIBLE_DEVICES=0`, see [here](https://github.com/JunyaoHu/common_metrics_on_video_quality/issues/13).
-7. **Acknowledgement**: The codebase refers to [LPIPS](https://github.com/richzhang/PerceptualSimilarity), [MVCD](https://github.com/voletiv/mcvd-pytorch) and other websites and projects, I've just extracted the part of it that's relevant to the calculation.
+7. **Acknowledgement**: The codebase refers to [LPIPS](https://github.com/richzhang/PerceptualSimilarity), [fvd-comparison](https://github.com/universome/fvd-comparison), [PyTorch-Frechet-Video-Distanc](https://github.com/ragor114/PyTorch-Frechet-Video-Distance), [MVCD](https://github.com/voletiv/mcvd-pytorch) and other websites and projects, I've just extracted the part of it that's relevant to the calculation.
 
 **If the project cannot run correctly, please give me an issue or PR.**
 
