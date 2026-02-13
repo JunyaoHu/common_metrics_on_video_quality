@@ -105,6 +105,47 @@ We can calculate:
 }
 ```
 
+## JAX FVD
+
+A pure JAX implementation of FVD is available via `method='jax'`. This is useful for JAX-based training pipelines where you want to avoid PyTorch dependencies at evaluation time.
+
+### Installation
+
+```
+pip install jax jaxlib
+# For GPU support, see https://github.com/google/jax#installation
+```
+
+### Usage
+
+With JAX arrays directly:
+
+```python
+import jax.numpy as jnp
+from calculate_fvd import calculate_fvd
+
+videos1 = jnp.ones((8, 30, 3, 64, 64))  # [B, T, C, H, W] in [0, 1]
+videos2 = jnp.zeros((8, 30, 3, 64, 64))
+
+result = calculate_fvd(videos1, videos2, method='jax', only_final=True)
+print(result["value"])  # [~151.3]
+```
+
+PyTorch tensors are also accepted and auto-converted:
+
+```python
+import torch
+result = calculate_fvd(torch_videos1, torch_videos2, method='jax', only_final=True)
+```
+
+### Weight Conversion
+
+On first run, the JAX backend automatically converts the PyTorch I3D weights (`fvd/videogpt/i3d_pretrained_400.pt`) to a JAX-compatible `.npz` file stored in `fvd/jax/`. This one-time conversion requires PyTorch to be installed. After conversion, the JAX backend runs without PyTorch.
+
+### Numerical Agreement
+
+The JAX and PyTorch (`videogpt`) backends produce FVD values that match within <1% relative difference.
+
 ## Comparison with orginal Tensorflow FVD metric
 
 If you want to use the original version of FVD which comes from Tensorflow, and compare FVD result with this repo's implementation:
