@@ -1,5 +1,4 @@
 import numpy as np
-import torch
 from tqdm import tqdm
 
 def trans(x):
@@ -12,7 +11,10 @@ def trans(x):
 
     return x
 
-def calculate_fvd(videos1, videos2, device, method='styleganv', only_final=False):
+def calculate_fvd(videos1, videos2, device=None, method='styleganv', only_final=False):
+
+    if method == 'jax':
+        return _calculate_fvd_jax(videos1, videos2, only_final=only_final)
 
     if method == 'styleganv':
         from fvd.styleganv.fvd import get_fvd_feats, frechet_distance, load_i3d_pretrained
@@ -23,7 +25,7 @@ def calculate_fvd(videos1, videos2, device, method='styleganv', only_final=False
     print("calculate_fvd...")
 
     # videos [batch_size, timestamps, channel, h, w]
-    
+
     assert videos1.shape == videos2.shape
 
     i3d = load_i3d_pretrained(device=device)
@@ -52,12 +54,12 @@ def calculate_fvd(videos1, videos2, device, method='styleganv', only_final=False
 
         # calculate FVD
         fvd_results.append(frechet_distance(feats1, feats2))
-    
+
     else:
 
         # for calculate FVD, each clip_timestamp must >= 10
         for clip_timestamp in tqdm(range(10, videos1.shape[-3]+1)):
-        
+
             # get a video clip
             # videos_clip [batch_size, channel, timestamps[:clip], h, w]
             videos_clip1 = videos1[:, :, : clip_timestamp]
@@ -66,7 +68,7 @@ def calculate_fvd(videos1, videos2, device, method='styleganv', only_final=False
             # get FVD features
             feats1 = get_fvd_feats(videos_clip1, i3d=i3d, device=device)
             feats2 = get_fvd_feats(videos_clip2, i3d=i3d, device=device)
-        
+
             # calculate FVD when timestamps[:clip]
             fvd_results.append(frechet_distance(feats1, feats2))
 
@@ -76,9 +78,52 @@ def calculate_fvd(videos1, videos2, device, method='styleganv', only_final=False
 
     return result
 
+
+def _calculate_fvd_jax(videos1, videos2, only_final=False):
+    import jax.numpy as jnp
+    from fvd.jax.fvd import load_i3d_pretrained, get_fvd_logits, frechet_distance
+
+    print("calculate_fvd (jax)...")
+
+    # Accept jnp arrays or convert from torch/numpy
+    if not isinstance(videos1, jnp.ndarray):
+        videos1 = jnp.array(np.array(videos1))
+    if not isinstance(videos2, jnp.ndarray):
+        videos2 = jnp.array(np.array(videos2))
+
+    assert videos1.shape == videos2.shape
+
+    # Handle grayscale: BTCHW with C=1 -> repeat to C=3
+    if videos1.shape[2] == 1:
+        videos1 = jnp.repeat(videos1, 3, axis=2)
+        videos2 = jnp.repeat(videos2, 3, axis=2)
+
+    # BTCHW -> BCTHW
+    videos1 = jnp.transpose(videos1, (0, 2, 1, 3, 4))
+    videos2 = jnp.transpose(videos2, (0, 2, 1, 3, 4))
+
+    params = load_i3d_pretrained()
+    fvd_results = []
+
+    if only_final:
+        assert videos1.shape[2] >= 10, "for calculate FVD, each clip_timestamp must >= 10"
+        feats1 = get_fvd_logits(videos1, params)
+        feats2 = get_fvd_logits(videos2, params)
+        fvd_results.append(frechet_distance(feats1, feats2))
+    else:
+        for clip_timestamp in tqdm(range(10, videos1.shape[2] + 1)):
+            videos_clip1 = videos1[:, :, :clip_timestamp]
+            videos_clip2 = videos2[:, :, :clip_timestamp]
+            feats1 = get_fvd_logits(videos_clip1, params)
+            feats2 = get_fvd_logits(videos_clip2, params)
+            fvd_results.append(frechet_distance(feats1, feats2))
+
+    return {"value": fvd_results}
+
 # test code / using example
 
 def main():
+    import torch
     NUMBER_OF_VIDEOS = 8
     VIDEO_LENGTH = 30
     CHANNEL = 3
